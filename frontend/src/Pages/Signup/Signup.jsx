@@ -1,3 +1,4 @@
+// fileName: Signup.js
 import React, { useState } from 'react';
 import './Signup.css'; // Import the external CSS file
 
@@ -6,8 +7,12 @@ const Signup = () => {
         fullName: '',
         email: '',
         phoneNumber: '+977',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
+
+    const [statusMessage, setStatusMessage] = useState(''); // State for status message
+    const [statusType, setStatusType] = useState(''); // State for success/error type
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -17,10 +22,42 @@ const Signup = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Simple validation for password match
+        if (formData.password !== formData.confirmPassword) {
+            setStatusMessage('Passwords do not match!');
+            setStatusType('error');
+            return;
+        }
+
         console.log('Form Data:', formData);
-        // Add form submission logic here
+
+        // Sending data to the backend (you can replace the URL with your actual backend URL)
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setStatusMessage('Signup successful! Please log in.');
+                setStatusType('success');
+                // You can redirect the user to the login page or clear the form
+            } else {
+                setStatusMessage(data.message || 'Signup failed! Please try again.');
+                setStatusType('error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setStatusMessage('An error occurred. Please try again later.');
+            setStatusType('error');
+        }
     };
 
     return (
@@ -68,11 +105,12 @@ const Signup = () => {
                     placeholder="Password"
                     required
                 />
+                
                 <input
                     className="signup-input-password"
                     type="password"
-                    name="Confirmpassword"
-                    value={formData.password}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirm Password"
                     required
@@ -80,6 +118,13 @@ const Signup = () => {
 
                 <button className="signup-button" type="submit">Sign Up</button>
             </form>
+
+            {/* Display success or error message */}
+            {statusMessage && (
+                <div className={`status-message ${statusType}`}>
+                    {statusMessage}
+                </div>
+            )}
         </div>
     );
 };

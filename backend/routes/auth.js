@@ -1,6 +1,6 @@
-// routes/auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
@@ -36,6 +36,51 @@ router.post('/signup', async (req, res) => {
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Login route
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Compare the provided password with the stored hash
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        // Create a JWT token
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET || 'your_jwt_secret',
+            { expiresIn: '1h' } // Token expires in 1 hour
+        );
+
+        // Respond with the token and user info
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            user: {
+                fullName: user.fullName,
+                email: user.email,
+                phoneNumber: user.phoneNumber
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

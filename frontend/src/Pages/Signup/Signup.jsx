@@ -6,7 +6,7 @@ const Signup = () => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phoneNumber: '+977',
+        phoneNumber: '', // Removed +977 prefix
         password: '',
         confirmPassword: ''
     });
@@ -28,6 +28,13 @@ const Signup = () => {
         // Simple validation for password match
         if (formData.password !== formData.confirmPassword) {
             setStatusMessage('Passwords do not match!');
+            setStatusType('error');
+            return;
+        }
+
+        // Password length validation (minimum 6 characters)
+        if (formData.password.length < 6) {
+            setStatusMessage('Password must be at least 6 characters long.');
             setStatusType('error');
             return;
         }
@@ -90,9 +97,7 @@ const Signup = () => {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleChange}
-                    pattern="\+977[0-9]{9}"
-                    title="Phone number must start with +977 and contain 9 digits after the country code."
-                    placeholder="Phone Number (+977)"
+                    placeholder="Phone Number"
                     required
                 />
 
@@ -125,6 +130,9 @@ const Signup = () => {
                     {statusMessage}
                 </div>
             )}
+                        <div className="login-link">
+                <p>Already have an account? <a href="/login">Login</a></p>
+            </div>
         </div>
     );
 };

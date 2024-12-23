@@ -6,7 +6,7 @@ const Signup = () => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phoneNumber: '', // Removed +977 prefix
+        phoneNumber: '',
         password: '',
         confirmPassword: ''
     });
@@ -24,6 +24,13 @@ const Signup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate phone number length
+        if (formData.phoneNumber.length < 10) {
+            setStatusMessage('Phone number must be at least 10 digits long.');
+            setStatusType('error');
+            return;
+        }
 
         // Simple validation for password match
         if (formData.password !== formData.confirmPassword) {
@@ -130,7 +137,8 @@ const Signup = () => {
                     {statusMessage}
                 </div>
             )}
-                        <div className="login-link">
+
+            <div className="login-link">
                 <p>Already have an account? <a href="/login">Login</a></p>
             </div>
         </div>
